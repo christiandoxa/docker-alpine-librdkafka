@@ -20,7 +20,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: docker build -t your-dockerhub-username/docker-alpine-librdkafka:latest .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/docker-alpine-librdkafka:latest .
 
       - name: Push Docker Image to Docker Hub
-        run: docker push your-dockerhub-username/docker-alpine-librdkafka:latest
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/docker-alpine-librdkafka:latest
