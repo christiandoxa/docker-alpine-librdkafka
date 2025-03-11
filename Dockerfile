@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 # Install librdkafka
-RUN apk add --no-cache librdkafka librdkafka-dev bash
+RUN apk update && apk add --no-cache gcc musl-dev librdkafka librdkafka-dev bash
 
 # Set working directory
 WORKDIR /app
