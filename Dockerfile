@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM golang:alpine
 
 # Install librdkafka
 RUN apk update && apk add --no-cache build-base musl-dev librdkafka librdkafka-dev bash
