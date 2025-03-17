@@ -15,7 +15,7 @@ RUN apk update && apk add --no-cache \
     openssh \
     zip \
     tar \
-    telnet \
+    busybox-extras \
     wget
 
 # Set working directory
