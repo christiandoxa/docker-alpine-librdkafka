@@ -1,7 +1,6 @@
-# Gunakan base image Alpine versi 3.14
-FROM alpine:3.14
+FROM golang:alpine
 
-# Install semua paket yang dibutuhkan termasuk unrar
+# Install librdkafka dan paket tambahan
 RUN apk update && apk add --no-cache \
     build-base \
     musl-dev \
@@ -17,8 +16,7 @@ RUN apk update && apk add --no-cache \
     zip \
     tar \
     busybox-extras \
-    wget \
-    unrar
+    wget
 
 # Set working directory
 WORKDIR /app
