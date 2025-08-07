@@ -1,4 +1,4 @@
-FROM golang:alpine
+FROM alpine:3.14
 
 # Install librdkafka dan paket tambahan
 RUN apk update && apk add --no-cache \
@@ -16,7 +16,8 @@ RUN apk update && apk add --no-cache \
     zip \
     tar \
     busybox-extras \
-    wget
+    wget \
+    unrar
 
 # Set working directory
 WORKDIR /app
