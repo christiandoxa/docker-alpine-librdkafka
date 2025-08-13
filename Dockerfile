@@ -1,6 +1,5 @@
-FROM alpine:3.14
+FROM alpine:3.22
 
-# Install librdkafka dan paket tambahan
 RUN apk update && apk add --no-cache \
     build-base \
     musl-dev \
@@ -9,7 +8,9 @@ RUN apk update && apk add --no-cache \
     bash \
     filezilla \
     curl \
+    jq \
     openssl \
+    ca-certificates \
     lftp \
     iputils \
     openssh \
@@ -17,10 +18,19 @@ RUN apk update && apk add --no-cache \
     tar \
     busybox-extras \
     wget \
-    unrar
+    libstdc++ \
+    libgcc
 
-# Set working directory
+RUN set -eux; \
+    mkdir -p /usr/local/bin; \
+    curl -LsSf https://api.github.com/repos/EDM115/unrar-alpine/releases/latest \
+    | jq -r '.assets[] | select(.name == "unrar") | .id' \
+    | xargs -I {} curl -LsSf https://api.github.com/repos/EDM115/unrar-alpine/releases/assets/{} \
+    | jq -r '.browser_download_url' \
+    | xargs -I {} curl -Lsf {} -o /tmp/unrar; \
+    install -m755 /tmp/unrar /usr/local/bin; \
+    rm -f /tmp/unrar
+
 WORKDIR /app
 
-# Perintah default saat container dijalankan
 CMD ["/bin/sh"]
