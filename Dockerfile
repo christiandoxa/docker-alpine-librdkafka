@@ -1,4 +1,4 @@
-FROM golang:1.25.4-alpine
+FROM golang:1.25.5-alpine
 
 # Install tools & libraries
 RUN apk add --no-cache \
