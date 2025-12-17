@@ -37,25 +37,26 @@ RUN set -eux; \
     install -m755 /tmp/unrar /usr/local/bin/unrar; \
     rm -f /tmp/unrar
 
-# Install grpcurl (latest stable, multi-arch) + verify using release checksums file
-# grpcurl release assets include grpcurl_<ver>_checksums.txt and grpcurl_<ver>_linux_{amd64,arm64}.tar.gz :contentReference[oaicite:3]{index=3}
+# Install grpcurl (latest stable, multi-arch) - download release asset robustly
 RUN set -eux; \
     arch="$(apk --print-arch)"; \
-    case "$arch" in \
-      x86_64) grpcurl_arch=linux_amd64 ;; \
-      aarch64) grpcurl_arch=linux_arm64 ;; \
-      *) echo "unsupported arch: $arch"; exit 1 ;; \
-    esac; \
     rel_json="$(curl -LsSf -H 'Accept: application/vnd.github+json' https://api.github.com/repos/fullstorydev/grpcurl/releases/latest)"; \
     tag="$(echo "$rel_json" | jq -r '.tag_name')"; \
     ver="${tag#v}"; \
-    tar_name="grpcurl_${ver}_${grpcurl_arch}.tar.gz"; \
-    sums_name="grpcurl_${ver}_checksums.txt"; \
-    tar_url="$(echo "$rel_json" | jq -r --arg n "$tar_name"  '.assets[] | select(.name==$n) | .browser_download_url')"; \
-    sums_url="$(echo "$rel_json" | jq -r --arg n "$sums_name" '.assets[] | select(.name==$n) | .browser_download_url')"; \
-    [ -n "$tar_url" ] || { echo "asset not found: $tar_name"; exit 1; }; \
+    case "$arch" in \
+      x86_64)  candidates="grpcurl_${ver}_linux_x86_64.tar.gz grpcurl_${ver}_linux_amd64.tar.gz" ;; \
+      aarch64) candidates="grpcurl_${ver}_linux_arm64.tar.gz" ;; \
+      *) echo "unsupported arch: $arch"; exit 1 ;; \
+    esac; \
+    tar_url=""; tar_name=""; \
+    for n in $candidates; do \
+      u="$(echo "$rel_json" | jq -r --arg n "$n" '.assets[] | select(.name==$n) | .browser_download_url' | head -n1)"; \
+      if [ -n "$u" ] && [ "$u" != "null" ]; then tar_url="$u"; tar_name="$n"; break; fi; \
+    done; \
+    [ -n "$tar_url" ] || { echo "asset not found for grpcurl ${ver} on ${arch}. Tried: $candidates"; exit 1; }; \
+    sums_url="$(echo "$rel_json" | jq -r --arg n "grpcurl_${ver}_checksums.txt" '.assets[] | select(.name==$n) | .browser_download_url')"; \
     curl -Lsf "$tar_url"  -o /tmp/grpcurl.tgz; \
-    if [ -n "$sums_url" ]; then \
+    if [ -n "$sums_url" ] && [ "$sums_url" != "null" ]; then \
       curl -Lsf "$sums_url" -o /tmp/grpcurl_checksums.txt; \
       grep "  ${tar_name}$" /tmp/grpcurl_checksums.txt | sed "s|  ${tar_name}$|  /tmp/grpcurl.tgz|" | sha256sum -c -; \
       rm -f /tmp/grpcurl_checksums.txt; \
