@@ -1,4 +1,4 @@
-FROM golang:1.25.5-alpine
+FROM golang:1.25.6-alpine
 
 ENV PATH="/go/bin:/usr/local/bin:${PATH}"
 
